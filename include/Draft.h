@@ -10,6 +10,7 @@
 #include "draftprocessor.h"
 #include "../fetcher.h"
 #include "deckwriter.h"
+#include "../cubereader.h"
 
 #include <sstream>
 
@@ -54,9 +55,10 @@ class Draft
 
 
         int                                      isOn();
-
+        bool                                       focus = 1;
         std::vector< std::string >                &cube;
         std::vector< std::vector< std::string > > vBoosters;
+        std::vector< std::vector< std::string > > vBoosters2;
 
         People           &ppl;
         Client           &clt;

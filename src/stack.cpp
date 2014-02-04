@@ -2,7 +2,8 @@
 
 Stack::Stack() :
     gridison( 0 ),
-    draftison( 0 )
+    draftison( 0 ),
+    hasCube( 0 )
 {
     //ctor
 }

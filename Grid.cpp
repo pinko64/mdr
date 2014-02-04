@@ -62,7 +62,8 @@ client.Send(packet);
 
 for ( int i = 0; i < _ints.size(); i++ )
 {
-    deckout.push_back( gp.cube[ _ints[ i ] ] );
+    deckout.push_back( cubeUnedited[ _ints[ i ] ] );
+    std::cout << cubeUnedited.back() << " pushed" << std::endl;
 }
 
 
@@ -91,7 +92,8 @@ void Grid::Shoot(std::vector<int> &_ints)
 
 for ( int i = 0; i < _ints.size(); i++ )
 {
-    alldecks[ stack.whosTurn ].push_back( gp.cube[ _ints[ i ] ] );
+    //alldecks[ stack.whosTurn ].push_back( gp.cube[ _ints[ i ] ] );
+    alldecks[ stack.whosTurn ].push_back( cubeUnedited[ _ints[ i ] ] );
 }
 
 
@@ -115,6 +117,7 @@ for (int i = 0; i < 3; i++)
 
 
     std::swap(gp.cube[ _ints[ i ] ], gp.cube[ gp.current ] );
+    std::swap( cubeUnedited[ _ints[ i ] ], cubeUnedited[ gp.current ] );
     gp.current++;
 
 }
@@ -200,26 +203,38 @@ if (_int == 2 || _int == 5 || _int == 8)
 
 
 
-void Grid::Loop( std::vector<std::string> &_deck ) {
+void Grid::Loop(  ) {
 
 
 
 
 
 
-
-cube = stack.getCube();
-gp.setCube( stack.getCube() );
-
-
+CubeReader cr;
+std::vector< std::string > vOutput = stack.getCube();
+cubeUnedited = vOutput;
+cube = cr( vOutput );
 Fetcher f( cube );
+
+for ( auto& x : cube )
+{
+    size_t c = x.find( ";" );
+    x.erase( c, std::string::npos );
+    std::cout << x << std::endl;
+}
+
+//gp.setCube( stack.getCube() );
+gp.setCube( cube );
+
+
+
 std::vector< std::string > vst;
 for ( int i = 0; i < ppl.vTexts.size(); i++ )
 alldecks.push_back( vst );
 
 
-sf::RectangleShape rr;
-f.it = f.mTextures.find("pfsffsfsox");
+
+
 
 
 while (rWin.isOpen())
@@ -418,5 +433,4 @@ void Grid::nextTurn()
         std::cout << "sz o : " << ppl.getppl().size();
 
 }
-
 

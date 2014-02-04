@@ -8,10 +8,19 @@ vTexts.clear();
 int X = 0;
 for ( int i = 0; i < cube.size() ; i++ )
 {
-
+//std::cout << cube[i] << std::endl;
     if ( Fetcher::mTextures.find( cube[ i ] ) != Fetcher::mTextures.end() )
         {
-            vShapes[i].setTexture( Fetcher::mTextures[ cube[ i ] ], true );
+                            /*/// Get setname...
+                std::cout << ".fwepflewpfwelpwfepfwelfwlpe";
+                size_t pos;
+                std::string set;
+                pos = cube[i].find( ";" );
+                set.assign( cube[i], pos + 1, std::string::npos );
+                cube[i].erase( pos, std::string::npos );
+                std::cout << "Nyt cube i : " << cube[i] << std::endl;
+*/
+            vShapes[i].setTexture( &*Fetcher::mTextures[ cube[ i ] ], true );
             //vShapes[i].setFillColor( sf::Color( 255, 255, 255, 255 ) );
         }
         else
@@ -49,6 +58,11 @@ for ( int i = 0; i < cube.size() ; i++ )
 void DraftProcessor::setBoosters( std::vector<std::string> _cube )
 {
     cube = _cube;
+    for ( auto &x : cube )
+    {
+        std::replace( x.begin(), x.end(), '_', ' ');
+    }
+
     vShapes.clear();
         sf::RectangleShape r1;
     r1.setTexture( &back );
@@ -83,7 +97,7 @@ void DraftProcessor::arrange( )
 {
 vRects.clear();
 
-int Off = 0;
+
 int Y = 0;
 int X = 0;
 for ( int i = 0; i < vShapes.size(); i++ )

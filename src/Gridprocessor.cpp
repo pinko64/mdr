@@ -9,10 +9,19 @@ vTexts.clear();
 int X = 0;
 for ( int i = 0; i < 9; i++ )
 {
-
-    if (Fetcher::mTextures.find( cube[ i ] ) != Fetcher::mTextures.end() )
+        size_t swp;
+        swp = cube[i].find( "Æ" );
+        if ( swp!=std::string::npos )
         {
-            vShapes[i].setTexture( Fetcher::mTextures[ cube[ i ] ], true );
+     //       v[i].replace( swp-1, 3, 1, ' ' );
+            cube[i][swp] = 'a';
+            cube[i].insert( swp+1, "e" );
+        }
+
+    if ( Fetcher::mTextures.find( cube[ i ] ) != Fetcher::mTextures.end() )
+        {
+            vShapes[i].setTexture( &*Fetcher::mTextures[ cube[ i ] ], true );
+         //std::cout << cube[i] << std::endl;
             //vShapes[i].setFillColor( sf::Color( 255, 255, 255, 255 ) );
         }
         else
@@ -47,6 +56,10 @@ for ( int i = 0; i < 9; i++ )
 void Gridprocessor::setCube( std::vector<std::string> _cube )
 {
     cube = _cube;
+        for ( auto &x : cube )
+    {
+        std::replace( x.begin(), x.end(), '_', ' ');
+    }
 }
 
 
@@ -80,11 +93,11 @@ void Gridprocessor::arrange( )
 {
 vRects.clear();
 
-int Off = 0;
 int Y = 0;
 int X = 0;
 for ( int i = 0; i < vShapes.size(); i++ )
 {
+
     vShapes[i].setPosition( sf::Vector2f(X*vShapes[i].getSize().x ,   Y  ) );
     sf::IntRect Rect = sf::IntRect(
                                    vShapes[i].getPosition().x,

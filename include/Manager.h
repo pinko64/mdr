@@ -6,6 +6,7 @@
 #include "button.h"
 #include "people.h"
 
+#include <functional>
 #include <random>
 #include "cfg.h"
 
@@ -33,7 +34,7 @@ class Manager
 
         People                    ppl;
 
-        Grid                      grid;
+        ///Grid                      grid;
 
         Client                    clt;
         Server                    srv;

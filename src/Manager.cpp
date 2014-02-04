@@ -1,11 +1,11 @@
 #include "Manager.h"
 
-	static inline std::string int2Str(int x)
-	{
-		std::stringstream type;
-		type << x;
-		return type.str();
-	}
+static inline std::string int2Str(int x)
+{
+    std::stringstream type;
+    type << x;
+    return type.str();
+}
 
 
 Manager::Manager( sf::VideoMode _vm, std::string _title, int _refresh ) :
@@ -14,17 +14,20 @@ Manager::Manager( sf::VideoMode _vm, std::string _title, int _refresh ) :
     state( 0 ),
     srv( conf.getIncomingPort() ),
     ppl( stack ),
-    clt( conf.getIpToConnect(), conf.getPortToConnect(), this, stack, ppl, conf.getName() ),
-    grid( Win.getWin() , srv, clt, stack, ppl )
-    {
+    clt( conf.getIpToConnect(), conf.getPortToConnect(), this, stack, ppl, conf.getName() )
+    ///grid( Win.getWin() , srv, clt, stack, ppl )
+{
     ///clt.setname( "Bob the dog" );
-    cube = cubereader.read( "cube.dec" );
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-     srand(seed);
-    std::random_shuffle(cube.begin(), cube.end());
+    ///cube = cubereader.read( "cube.dec" );
+     cube = cubereader.read( "cube.txt" );
 
-//std::unique_ptr< Draft > pDraft( new Draft( win, srv, clt, ppl, cube ) );
-//pDraft->Loop();
+
+    ///stack.cubeUnedited = cubes[ 0 ];
+    ///cube = cubes [ 0 ];
+
+
+
+
 
     //ctor
 ///btnhost( (int) win.getSize().x - 200, 0, 100, 100 )
@@ -69,20 +72,25 @@ void Manager::test()
 void Manager::loop()
 {
 
-std::random_device rdev;
-std::mt19937 rgen( rdev() );
+    std::random_device rdev;
+    std::mt19937 rgen( rdev() );
 
 
-
-while ( state != 10 )
+    while ( state != 10 )
     {
 
-        if (stack.gridison)
-            state = 1;
-        if ( state == 1) //grid draft
+        if ( stack.gridison )
+            state = 2;
+        if ( state == 2 ) //grid draft
         {
-            grid.Loop(cube);
+            while ( !stack.hasCube )
+            {
+            }
+            std::unique_ptr< Grid > grid( new Grid(Win.getWin() , srv, clt, stack, ppl ) );
+            grid->Loop( );
         }
+
+
         if (stack.draftison)
             state = 1;
         if ( state == 1)
@@ -96,120 +104,116 @@ while ( state != 10 )
 
 
         sf::Event event;
-            while ( win.pollEvent( event ) )
+        while ( win.pollEvent( event ) )
+        {
+            if ( event.type == sf::Event::Closed )
             {
-                if ( event.type == sf::Event::Closed )
+                state = 10;
+                if ( srv.ServerActive )
+                {
+                    srv.ServerActive = 0;
+                    srv.threadServer.join();
+                }
+                if ( clt.ClientActive )
+                {
+                    clt.ClientActive = 0;
+                    clt.threadClient.join();
+                }
+                win.close();
+            }
+
+
+
+            if ( btnhost.getRect().contains( sf::Mouse::getPosition(win) )
+                    && sf::Mouse::isButtonPressed( sf::Mouse::Left )
+                    && btnclock.getElapsedTime().asSeconds() > 2 )
+            {
+                srv.Start(btnclock);
+            }
+
+
+
+
+
+            if ( btngrid.getRect().contains( sf::Mouse::getPosition(win) )
+                    && sf::Mouse::isButtonPressed( sf::Mouse::Left )
+                    && btnclock.getElapsedTime().asSeconds() > 2 )
+            {
+                sf::Packet packet;
+                sf::Int32  _id = 106;
+                packet << _id;
+                _id = cube.size();
+                packet << _id;
+                for ( int i = 0; i < cube.size(); i++ )
+                {
+                    std::string str = cube[ i ];
+                    packet << str;
+                }
+
+                std::uniform_int_distribution< int > idist( 0, srv.amount - 1 );
+                _id = idist( rgen );
+                packet << _id;
+
+
+                srv.sendAll( packet );
+                state = 2;
+            }
+
+
+
+
+            if ( btnconnect.getRect().contains( sf::Mouse::getPosition(win) )
+                    && sf::Mouse::isButtonPressed( sf::Mouse::Left )
+                    //&& btnclock.getElapsedTime().asSeconds() > 2 )
+               )
+            {
+                sf::Packet packet;
+                sf::Int32  _id = 107;
+                packet << _id;
+                _id = cube.size();
+                packet << _id;
+                for ( int i = 0; i < cube.size(); i++ )
+                {
+                    std::string str = cube[ i ];
+                    packet << str;
+                }
+
+                std::uniform_int_distribution< int > idist( 0, srv.amount - 1 );
+                _id = idist( rgen );
+                packet << _id;
+
+
+                srv.sendAll( packet );
+
+                packet.clear();
+                std::vector< sf::Int32 > vIds;
+                for ( int i = 0; i < srv.clients.size() ; i++ )
+                {
+                    vIds.push_back( i );
+                }
+                std::random_shuffle(vIds.begin(), vIds.end());
+
+                packet << _id;
+                _id = vIds.size();
+                packet << _id;
+                for ( auto x : vIds )
+                    packet << x;
+
+                int z = 0;
+                {
+                    for ( auto x : srv.clients )
                     {
-                        state = 10;
-                        if ( srv.ServerActive )
-                        {
-                            srv.ServerActive = 0;
-                            srv.threadServer.join();
-                        }
-                        if ( clt.ClientActive )
-                        {
-                            clt.ClientActive = 0;
-                            clt.threadClient.join();
-                        }
-                        win.close();
-                    }
-
-
-
-if ( btnhost.getRect().contains( sf::Mouse::getPosition(win) )
-    && sf::Mouse::isButtonPressed( sf::Mouse::Left )
-    && btnclock.getElapsedTime().asSeconds() > 2 )
-                {
-                    srv.Start(btnclock);
-                }
-
-
-
-
-
-                if ( btngrid.getRect().contains( sf::Mouse::getPosition(win) )
-    && sf::Mouse::isButtonPressed( sf::Mouse::Left )
-    && btnclock.getElapsedTime().asSeconds() > 2 )
-                {
-                                     sf::Packet packet;
-                       sf::Int32  _id = 106;
-                        packet << _id;
-                                _id = cube.size();
-                        packet << _id;
-                       for ( int i = 0; i < cube.size(); i++ )
-                       {
-                        std::string str = cube[ i ];
-                        packet << str;
-                       }
-
-                         std::uniform_int_distribution< int > idist( 0, srv.amount - 1 );
-                         _id = idist( rgen );
-                        packet << _id;
-
-
-                       srv.sendAll( packet );
-                }
-
-
-
-
-if ( btnconnect.getRect().contains( sf::Mouse::getPosition(win) )
-    && sf::Mouse::isButtonPressed( sf::Mouse::Left )
-    //&& btnclock.getElapsedTime().asSeconds() > 2 )
-                )
-                {
-                                              sf::Packet packet;
-                       sf::Int32  _id = 107;
-                        packet << _id;
-                                _id = cube.size();
-                        packet << _id;
-                       for ( int i = 0; i < cube.size(); i++ )
-                       {
-                        std::string str = cube[ i ];
-                        packet << str;
-                       }
-
-                         std::uniform_int_distribution< int > idist( 0, srv.amount - 1 );
-                         _id = idist( rgen );
-                        packet << _id;
-
-
-                       srv.sendAll( packet );
-
                         packet.clear();
-                         std::vector< sf::Int32 > vIds;
-                         for ( int i = 0; i < srv.clients.size() ; i++ )
-                         {
-                            vIds.push_back( i );
-                         }
-                        std::random_shuffle(vIds.begin(), vIds.end());
 
+                        _id = 109; /// järkkä
                         packet << _id;
-                        _id = vIds.size();
+                        _id = vIds[ z ];
                         packet << _id;
-                        for ( auto x : vIds )
-                            packet << x;
+                        x->send( packet );
+                        z++;
 
-                        int z = 0;
-                        {
-                            for ( auto x : srv.clients )
-                            {
-                            packet.clear();
-
-                            _id = 109; /// järkkä
-                            packet << _id;
-                            _id = vIds[ z ];
-                            packet << _id;
-                            x->send( packet );
-                                z++;
-
-                            }
-                        }
-
-
+                    }
                 }
-
-
 
 
             }
@@ -217,21 +221,26 @@ if ( btnconnect.getRect().contains( sf::Mouse::getPosition(win) )
 
 
 
+        }
 
 
 
 
-            win.clear( sf::Color( 100, 100, 100, 255 ) );
 
 
-            win.draw(text);
-            btnhost.draw(win);
-            btnconnect.draw(win);
-            btngrid.draw(win);
-            ppl.draw(win);
-            win.draw(btnhost.text);
 
-            win.display();
+
+        win.clear( sf::Color( 100, 100, 100, 255 ) );
+
+
+        win.draw(text);
+        btnhost.draw(win);
+        btnconnect.draw(win);
+        btngrid.draw(win);
+        ppl.draw(win);
+        win.draw(btnhost.text);
+
+        win.display();
     }
 
 

@@ -11,6 +11,53 @@ CubeReader::~CubeReader()
     //dtor
 }
 
+std::vector<std::string> CubeReader::operator()( std::vector< std::string > &vr )
+{
+
+    std::size_t swp = 0;
+    std::vector< std::string > cube;
+
+    std::string str;
+    std::string temp;
+    int number;
+
+    for ( int i = 0; i < vr.size(); i++ )
+    {
+        str = vr[ i ];
+        swp = str.find( "\"" );
+        //std::cout << str << std::endl;
+        if ( swp != std::string::npos )
+        {
+            str.erase( swp, 1 );
+            swp = str.find( "\"" );
+            temp.assign( str, 0, swp );
+
+            str.erase( 0, swp+1 );
+            for ( int i = 0; i < 4; i++ )
+            {
+                swp = str.find( "," );
+                str.erase( 0, swp + 1 );
+            }
+            swp = str.find( "," );
+            str.erase( swp, std::string::npos );
+            temp += ";" + str;
+
+            cube.push_back( temp );
+
+
+        }
+    }
+
+
+
+
+
+
+    return cube;
+
+
+}
+
 
 std::vector<std::string> CubeReader::read(std::string filename)
 {
@@ -18,42 +65,36 @@ std::vector<std::string> CubeReader::read(std::string filename)
 
 
 
-std::size_t swp = 0;
+    std::vector< std::string > cube;
 
-std::string str;
-int number;
 
-std::ifstream infile;
-infile.open(filename);
+    std::size_t swp = 0;
+
+    std::string str;
+    std::string temp;
+    int number;
+
+    std::ifstream infile;
+    infile.open(filename);
+
+
     while(getline(infile,str))
     {
-
-
-        number = std::stoi(str);
-
-        str.erase(str.begin(),str.begin()+2);
-        swp = str.find("/");
-        if (swp!=std::string::npos){
-            str.replace(swp-1,3,1,' ');
-            //std::replace(str.begin(),str.end(), ' ', '_');
-        }
-         std::replace(str.begin(),str.end(), ' ', '_');
-        //if (str.find()) std::cout << "found" << std::endl;
-        ///fetcher.Fetch(str);
-//            std::cout << str << std::endl;
-
-        //std::cout << number << std::endl;
-        //std::cout << str << std::endl;
-        swp = 0;
-        ///std::cout << str << "    -    ";
-        //Card c1(str);
-        //c1.CardTexture.loadFromFile("img/" + str + ".jpg");
-        //c1.CardSprite.setTexture()
-        vCard.push_back(str);
-
-
+        if ( *str.begin() == '"' )
+        cube.push_back( str ); ///Write to cube1. unedited.
     }
-//fetcher.Fetch("call of the herd");
-//fetcher.Fetch("call_of_the_herd");
-return vCard;
+    infile.close();
+    ///Shuffle deck:
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::mt19937_64 gt ( seed );
+    srand ( gt() );
+    std::random_shuffle( cube.begin(), cube.end() );
+
+
+
+    return cube;
+
+
+
+
 }

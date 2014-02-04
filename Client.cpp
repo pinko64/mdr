@@ -143,6 +143,7 @@ if (id == 106) // start grid;  + give deck;
      stack.whosTurn = num;
 
      stack.gridison = 1;
+     stack.hasCube = 1;
 
     }
 
@@ -162,7 +163,7 @@ if (id == 107) // start draft;  + give deck;
      }
 
         stack.addCube( vstr );
-
+        stack.hasCube = 1;
      //packet >> num;
      //stack.whosTurn = num;
 
@@ -177,7 +178,7 @@ if (id == 107) // start draft;  + give deck;
      int x;
      packet >> x;
      stack.ID = x;
-     std::cout << "Minun id on : " << x << std::endl;
+
 
 
     }
